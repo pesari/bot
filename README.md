@@ -3,7 +3,7 @@
 ```sh
 # Let's install the bot.
 cd $HOME
-git clone https://github.com/mmd021/bot.git
+git clone https://github.com/pesari/bot.git
 cd bot
 chmod +x bot.sh
 ./bot.sh install
