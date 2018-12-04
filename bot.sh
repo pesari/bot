@@ -63,11 +63,8 @@ if [ ! -f ./tg/tgcli ]; then
 
    print_logo
    echo -e "\033[38;5;208m"
-   echo -e "     >>>>                       hamid @fake_h                             "
-   echo -e "     >>>>                       sina @mr_kick                             "
-   echo -e "     >>>>                       reza @rza_1d                                   "
-   echo -e "     >>>>                       mohamad @tel_d                             "
-   echo -e "     >>>>                       ─═ঈঊ(➊)ঊঈ═─                                     "
+   echo -e "     >>>>                       baba @mohamaddige                             "  
+    echo -e "     >>>>                       ─═ঈঊ(➊)ঊঈ═─                                     "
    echo -e "\033[0;00m"
    echo -e "\e[36m"
    logo_play
