@@ -1,4 +1,4 @@
---Begin rank plugin by @Nikutintm 
+--Begin rank plugin by @mohamaddige 
 local function getrank(msg)
 	local rank = ""
 	local hash = "laghab:"..tostring(msg.from.id)
@@ -268,4 +268,4 @@ return {
 	},
 	run=run
 }
---End rank plugin by @nikutintm
+

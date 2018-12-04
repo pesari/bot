@@ -179,6 +179,3 @@ patterns = {
 },
 run = run
 }
-
---End Chat-Actions.lua 
---By @Makan ;D

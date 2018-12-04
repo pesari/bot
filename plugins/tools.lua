@@ -502,9 +502,9 @@ local function pre_process(msg)
 			redis:set('ExpireDate:'..msg.to.id,true)
 			redis:setex('ExpireDate:'..msg.to.id, 86400, true)
 			if lang then
-				tdcli.sendMessage(msg.to.id, msg.id_, 1, '_گروه به مدت 1 روز شارژ شد. لطفا با سودو برای شارژ بیشتر تماس بگیرید. در غیر اینصورت گروه شما از لیست ربات حذف و ربات گروه را ترک خواهد کرد._', 1, 'md')
+				tdcli.sendMessage(msg.to.id, msg.id_, 1, 'salam', 1, 'md')
 			else
-				tdcli.sendMessage(msg.to.id, msg.id_, 1, '_Group charged 1 day. to recharge the robot contact with the sudo. With the completion of charging time, the group removed from the robot list and the robot will leave the group._', 1, 'md')
+				tdcli.sendMessage(msg.to.id, msg.id_, 1, 'salam😌', 1, 'md')
 			end
 		end
 		if chex and not exd and msg.from.id ~= SUDO and not is_sudo(msg) then
@@ -1444,9 +1444,9 @@ patterns = {
 "^[!/#]([Cc]harge) (%d+)$",
 "^[!/#]([Jj]ointo) (.*)$",
 "^[!/#]([Ll]eave) (.*)$",
-"^[!/#]([Pp]lan) ([123]) (.*)$",
+"^[!/#](plan) ([123]) (.*)$",
 "^[!/#]([Rr]em)$",
 }, 
 run = run, pre_process = pre_process
 }
--- #End By ─═ঈঊ(➊)ঊঈ═─
+-- #En
