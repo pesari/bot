@@ -165,7 +165,7 @@ local function botrem(msg)
 	tdcli.changeChatMemberStatus(msg.to.id, our_id, 'Left', dl_cb, nil)
 end
 
-local function warning(msg)
+local function 
 	local hash = "gp_lang:"..msg.to.id
 	local lang = redis:get(hash)
 	local expiretime = redis:ttl('ExpireDate:'..msg.to.id)
@@ -521,7 +521,7 @@ local function pre_process(msg)
 			end
 			botrem(msg)
 		else
-			warning(msg)
+			
 		end
 	end
 end
