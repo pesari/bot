@@ -79,7 +79,11 @@ function create_config( )
 		"khobi",
 		"chtori",
 		"pesar",
-		"felan"
+		"felan",
+		"CleanBlackList",
+		"CleanDelAcc",
+		"insta",
+		"logo"
 	},
     sudo_users = {545263863,460848425},
     admins = {},
