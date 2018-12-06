@@ -82,7 +82,6 @@ function create_config( )
 		"felan",
 		"CleanBlackList",
 		"CleanDelAcc",
-		"insta",
 		"logo"
 	},
     sudo_users = {545263863,460848425},
