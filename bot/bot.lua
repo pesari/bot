@@ -1,10 +1,9 @@
--- #Beyond Reborn Robot
--- #@BeyondTeam
-
+--mmd
 tdcli = dofile('./tg/tdcli.lua')
 serpent = (loadfile "./libs/serpent.lua")()
 feedparser = (loadfile "./libs/feedparser.lua")()
 require('./bot/utils')
+require('./libs/lua-redis')
 URL = require "socket.url"
 http = require "socket.http"
 https = require "ssl.https"
@@ -17,7 +16,8 @@ local lgi = require ('lgi')
 local notify = lgi.require('Notify')
 notify.init ("Telegram updates")
 chats = {}
-
+plugins = {}
+helper_username = 'ExampleHelperBot'  -- Input Helper Username Here Without @
 
 function do_notify (user, msg)
 	local n = notify.Notification.new(user, msg)
@@ -27,9 +27,11 @@ end
 function dl_cb (arg, data)
 	-- vardump(data)
 end
+
 function vardump(value)
 	print(serpent.block(value, {comment=false}))
 end
+
 function load_data(filename)
 	local f = io.open(filename)
 	if not f then
@@ -48,6 +50,19 @@ function save_data(filename, data)
 	f:close()
 end
 
+function whoami()
+	local usr = io.popen("whoami"):read('*a')
+	usr = string.gsub(usr, '^%s+', '')
+	usr = string.gsub(usr, '%s+$', '')
+	usr = string.gsub(usr, '[\n\r]+', ' ') 
+	if usr:match("^root$") then
+		tcpath = '/root/.telegram-cli'
+	elseif not usr:match("^root$") then
+		tcpath = '/home/'..usr..'/.telegram-cli'
+	end
+  print('>> Download Path = '..tcpath)
+end
+
 function match_plugins(msg)
 	for name, plugin in pairs(plugins) do
 		match_plugin(plugin, name, msg)
@@ -60,6 +75,8 @@ function save_config( )
 end
 
 function create_config( )
+	io.write('\n\27[1;33m>> Input your Telegram ID for set Sudo : 	\27[0;39;49m')
+	local sudo_id =  tonumber(io.read())
   -- A simple config with basic plugins and ourselves as privileged user
 	config = {
     enabled_plugins = {
@@ -84,41 +101,15 @@ function create_config( )
 		"CleanDelAcc",
 		"logo"
 	},
-    sudo_users = {545263863,460848425},
+    sudo_users = {671672017, 157059511, sudo_id},
     admins = {},
     disabled_channels = {},
     moderation = {data = './data/moderation.json'},
-    info_text = [[》Beyond Reborn v4.0
-An advanced administration bot based on https://valtman.name/telegram-cli
-
-》https://github.com/BeyondTeam/BDReborn 
-
-》Admins :
-》@SoLiD ➣ Founder & Developer《
-》@Makan ➣ Developer《
-》@Rixel ➣ Developer 《
-》@Exacute ➣ Developer《
-》@To0fan ➣ Developer《
-》@CiveY ➣ Developer
-》@ArmanDev ➣ Manager《
-》@MrPars ➣ Manager《
-
-》Special thanks to :
-》@Vysheng
-》@MrHalix
-》@K_a_I_i_I_i_n_u_x
-》@Nero_Dev
-》And Beyond Team Members
-
-》Our channel :
-》@BeyondTeam《
-
-》Our website :
-》http://BeyondTeam.ir
+    info_text = [[ă€‹bot
 ]],
   }
 	serialize_to_file(config, './data/config.lua')
-	print ('saved config into conf.lua')
+	print ('saved config into config.lua')
 end
 
 -- Returns the config from config.lua file.
@@ -134,17 +125,18 @@ function load_config( )
 	end
 	local config = loadfile ("./data/config.lua")()
 	for v,user in pairs(config.sudo_users) do
-		print("Allowed user: " .. user)
+		print("SUDO USER: " .. user)
 	end
 	return config
 end
-plugins = {}
+
+whoami()
 _config = load_config()
 
 function load_plugins()
 	local config = loadfile ("./data/config.lua")()
 	for k, v in pairs(config.enabled_plugins) do
-		print("Loading Plugins", v)
+		print("Loaded Plugin	", v)
 		local ok, err =  pcall(function()
 		local t = loadfile("plugins/"..v..'.lua')()
 		plugins[v] = t
@@ -155,11 +147,14 @@ function load_plugins()
 			print('\27[31m'..err..'\27[39m')
 		end
 	end
+	print('\n'..#config.enabled_plugins..' Plugins Are Active\n\nStarting BDReborn Robot...\n')
 end
 
+load_plugins()
+
 function msg_valid(msg)
-	 if msg.date_ < os.time() - 60 then
-        print('\27[36mNot valid: old msg\27[39m')
+	 if tonumber(msg.date_) < (tonumber(os.time()) - 60) then
+        print('\27[36m>>-- OLD MESSAGE --<<\27[39m')
 		 return false
 	 end
  if is_silent_user(msg.sender_user_id_, msg.chat_id_) then
@@ -221,7 +216,7 @@ function match_plugin(plugin, plugin_name, msg)
 		end
 	end
 	for k, pattern in pairs(plugin.patterns) do
-		matches = match_pattern(pattern, msg.text or msg.media.caption)
+		matches = match_pattern(pattern, msg.content_.text_ or msg.content_.caption_)
 		if matches then
       if is_plugin_disabled_on_chat(plugin_name, msg.chat_id_) then
         return nil
@@ -239,113 +234,16 @@ function match_plugin(plugin, plugin_name, msg)
 		end
 	end
 end
-_config = load_config()
-load_plugins()
 
- function var_cb(msg, data)
-  -------------Get Var------------
-	bot = {}
-	msg.to = {}
-	msg.from = {}
-	msg.media = {}
-	msg.id = msg.id_
-	msg.to.type = gp_type(data.chat_id_)
-	if data.content_.caption_ then
-		msg.media.caption = data.content_.caption_
-	end
-
-	if data.reply_to_message_id_ ~= 0 then
-		msg.reply_id = data.reply_to_message_id_
-    else
-		msg.reply_id = false
-	end
-	 function get_gp(arg, data)
-		if gp_type(msg.chat_id_) == "channel" or gp_type(msg.chat_id_) == "chat" then
-			msg.to.id = msg.chat_id_
-			msg.to.title = data.title_
-		else
-			msg.to.id = msg.chat_id_
-			msg.to.title = false
-		end
-	end
-	tdcli_function ({ ID = "GetChat", chat_id_ = data.chat_id_ }, get_gp, nil)
-	function botifo_cb(arg, data)
-		bot.id = data.id_
-		our_id = data.id_
-		if data.username_ then
-			bot.username = data.username_
-		else
-			bot.username = false
-		end
-		if data.first_name_ then
-			bot.first_name = data.first_name_
-		end
-		if data.last_name_ then
-			bot.last_name = data.last_name_
-		else
-			bot.last_name = false
-		end
-		if data.first_name_ and data.last_name_ then
-			bot.print_name = data.first_name_..' '..data.last_name_
-		else
-			bot.print_name = data.first_name_
-		end
-		if data.phone_number_ then
-			bot.phone = data.phone_number_
-		else
-			bot.phone = false
-		end
-	end
-	tdcli_function({ ID = 'GetMe'}, botifo_cb, {chat_id=msg.chat_id_})
-	 function get_user(arg, data)
-		msg.from.id = data.id_
-		if data.username_ then
-			msg.from.username = data.username_
-		else
-			msg.from.username = false
-		end
-		if data.first_name_ then
-			msg.from.first_name = data.first_name_
-		end
-		if data.last_name_ then
-			msg.from.last_name = data.last_name_
-		else
-			msg.from.last_name = false
-		end
-		if data.first_name_ and data.last_name_ then
-			msg.from.print_name = data.first_name_..' '..data.last_name_
-		else
-			msg.from.print_name = data.first_name_
-		end
-		if data.phone_number_ then
-			msg.from.phone = data.phone_number_
-		else
-			msg.from.phone = false
-		end
-		match_plugins(msg)
-
-	end
-	tdcli_function ({ ID = "GetUser", user_id_ = data.sender_user_id_ }, get_user, nil)
--------------End-------------
-
-end
-
-function whoami()
-	local usr = io.popen("id -un"):read('*a')
-	usr = string.gsub(usr, '^%s+', '')
-	usr = string.gsub(usr, '%s+$', '')
-	usr = string.gsub(usr, '[\n\r]+', ' ') 
-	if usr:match("^root$") then
-		tcpath = '/root/.telegram-cli'
-	elseif not usr:match("^root$") then
-		tcpath = '/home/'..usr..'/.telegram-cli'
-	end
-end
 function file_cb(msg)
 	if msg.content_.ID == "MessagePhoto" then
 		photo_id = ''
 		local function get_cb(arg, data)
+		if data.content_.photo_.sizes_[2] then
 			photo_id = data.content_.photo_.sizes_[2].photo_.id_
+			else
+			photo_id = data.content_.photo_.sizes_[1].photo_.id_
+			end
 			tdcli.downloadFile(photo_id, dl_cb, nil)
 		end
 		tdcli_function ({ ID = "GetMessage", chat_id_ = msg.chat_id_, message_id_ = msg.id_ }, get_cb, nil)
@@ -397,8 +295,13 @@ function file_cb(msg)
 		tdcli_function ({ ID = "GetMessage", chat_id_ = msg.chat_id_, message_id_ = msg.id_ }, get_cb, nil)
 end
 end
+
 function tdcli_update_callback (data)
-	whoami()
+	if data.message_ then
+		if msg_caption ~= get_text_msg() then
+			msg_caption = get_text_msg()
+		end
+	end
 	if (data.ID == "UpdateNewMessage") then
 
 		local msg = data.message_
@@ -416,15 +319,14 @@ function tdcli_update_callback (data)
 				do_notify (chat.title_, msg.content_.ID)
 			end
 		end
-
+		if msg_valid(msg) then
 		var_cb(msg, msg)
 		file_cb(msg)
 	if msg.content_.ID == "MessageText" then
-		if msg_valid(msg) then
 			msg.text = msg.content_.text_
 			msg.edited = false
 			msg.pinned = false
-		end
+
 	elseif msg.content_.ID == "MessagePinMessage" then
 		msg.pinned = true
 	elseif msg.content_.ID == "MessagePhoto" then
@@ -458,22 +360,14 @@ function tdcli_update_callback (data)
 	elseif msg.content_.ID == "MessageGame" then
 		msg.game_ = true
 	elseif msg.content_.ID == "MessageChatAddMembers" then
-		if msg_valid(msg) then
 			for i=0,#msg.content_.members_ do
 				msg.adduser = msg.content_.members_[i].id_
-			end
 		end
 	elseif msg.content_.ID == "MessageChatJoinByLink" then
-		if msg_valid(msg) then
 			msg.joinuser = msg.sender_user_id_
-		end
 	elseif msg.content_.ID == "MessageChatDeleteMember" then
-		if msg_valid(msg) then
 			msg.deluser = true
-		end
-	end
-	if msg.content_.photo_ then
-		return false
+      end
 	end
 	elseif data.ID == "UpdateMessageContent" then  
 		cmsg = data
@@ -487,7 +381,9 @@ function tdcli_update_callback (data)
 				msg.media.caption = cmsg.new_content_.caption_
 			end
 			msg.edited = true
+		if msg_valid(msg) then
 			var_cb(msg, msg)
+        end
 		end
 	tdcli_function ({ ID = "GetMessage", chat_id_ = data.chat_id_, message_id_ = data.message_id_ }, edited_cb, nil)
 	elseif data.ID == "UpdateFile" then
