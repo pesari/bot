@@ -320,7 +320,7 @@ function tdcli_update_callback (data)
 			end
 		end
 		if msg_valid(msg) then
-		var_cb(msg, msg)
+		var_cb(msg,msg)
 		file_cb(msg)
 	if msg.content_.ID == "MessageText" then
 			msg.text = msg.content_.text_
